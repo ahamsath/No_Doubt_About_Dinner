@@ -25,3 +25,20 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Hide scrollbars for mobile category scroll */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;            /* Chrome, Safari and Opera */
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

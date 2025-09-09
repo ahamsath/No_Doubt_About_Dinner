@@ -257,13 +257,13 @@ function App() {
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Hero Section with Logo */}
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-b from-stone-100 to-stone-50">
-        <div className="text-center">
-          <div className="mb-8">
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-stone-100 to-stone-50 px-4 py-8">
+        <div className="text-center max-w-4xl mx-auto">
+          <div className="mb-6 sm:mb-8">
             <img 
               src="/chef-logo.png" 
               alt="Personal Chef Logo" 
-              className="mx-auto h-96 w-96 object-contain"
+              className="mx-auto h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 object-contain"
               onError={(e) => {
                 // Fallback if image doesn't exist
                 const target = e.target as HTMLImageElement;
@@ -271,30 +271,30 @@ function App() {
                 target.nextElementSibling?.classList.remove('hidden');
               }}
             />
-            <div className="hidden bg-stone-200 h-96 w-96 mx-auto rounded-full flex items-center justify-center">
-              <span className="text-7xl font-bold text-stone-600">Chef</span>
+            <div className="hidden bg-stone-200 h-48 w-48 sm:h-72 sm:w-72 lg:h-96 lg:w-96 mx-auto rounded-full flex items-center justify-center">
+              <span className="text-4xl sm:text-6xl lg:text-7xl font-bold text-stone-600">Chef</span>
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-stone-800 mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-stone-800 mb-4 leading-tight">
             No Doubt About Dinner
           </h1>
-          <p className="text-xl text-stone-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-stone-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Exquisite personal chef experiences delivered to your door. 
             Crafted with passion, served with excellence.
           </p>
           
           {/* Individual/Catering Toggle - Main Page */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-stone-200 rounded-full p-1">
+          <div className="flex justify-center mb-6 sm:mb-8 px-4">
+            <div className="bg-stone-200 rounded-full p-1 w-full max-w-xs sm:w-auto">
               <button
                 onClick={() => setServiceType('Individual')}
-                className={`px-6 py-3 rounded-full text-base font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
               >
                 Individual
               </button>
               <button
                 onClick={() => setServiceType('Catering')}
-                className={`px-6 py-3 rounded-full text-base font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
               >
                 Catering
               </button>
@@ -304,7 +304,7 @@ function App() {
       </section>
 
       {/* Menu Section */}
-      <section id="menu" className="pb-20 pt-6 px-4 sm:px-6 lg:px-8">
+      <section id="menu" className="pb-16 sm:pb-20 pt-4 sm:pt-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Sticky Category Row */}
           <div className="sticky top-0 z-40 bg-stone-50">
@@ -329,7 +329,7 @@ function App() {
                 <div className="md:hidden">
                   <div 
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto no-scrollbar"
+                    className="flex gap-3 overflow-x-auto no-scrollbar"
                     style={{ scrollBehavior: 'auto' }}
                   >
                     {/* Duplicate categories for seamless loop */}
@@ -337,9 +337,9 @@ function App() {
                       <button
                         key={`${value}-${index}`}
                         onClick={() => setActiveCategory(value)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
+                        className={`flex-shrink-0 w-[72px] h-[72px] rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
                       >
-                        <Icon className="h-8 w-8" />
+                        <Icon className="h-7 w-7" />
                         <span className="text-xs font-semibold leading-tight">{label}</span>
                       </button>
                     ))}
@@ -350,13 +350,13 @@ function App() {
           </div>
 
           {/* Section Header */}
-          <div className="mt-6 mb-4">
-            <h2 className="text-2xl font-bold text-stone-900">Featured Dishes</h2>
-            <p className="text-stone-600">Inspired by your preferences</p>
+          <div className="mt-4 sm:mt-6 mb-3 sm:mb-4 px-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Featured Dishes</h2>
+            <p className="text-sm sm:text-base text-stone-600">Inspired by your preferences</p>
           </div>
 
           {/* Menu Grid - Merchant style cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredAndSortedItems.map(item => (
               <div key={item.id} className="group relative rounded-2xl overflow-hidden shadow-sm border border-stone-200 bg-white">
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -371,24 +371,24 @@ function App() {
                   </div>
                   <button
                     onClick={() => addToCart(item)}
-                    className="absolute bottom-3 right-3 bg-stone-900 text-white rounded-full p-2 shadow-md hover:bg-stone-800 transition-colors"
+                    className="absolute bottom-3 right-3 bg-stone-900 text-white rounded-full p-2.5 sm:p-2 shadow-md hover:bg-stone-800 transition-colors"
                     aria-label="Add to cart"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-base font-semibold text-stone-900">{item.name}</h3>
-                      <div className="mt-1 flex items-center gap-3 text-sm text-stone-600">
-                        <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /> {item.rating}</span>
-                        <span>{item.category}</span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm sm:text-base font-semibold text-stone-900 truncate">{item.name}</h3>
+                      <div className="mt-1 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-stone-600">
+                        <span className="flex items-center gap-1"><Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" /> {item.rating}</span>
+                        <span className="hidden sm:inline">{item.category}</span>
                         <span className="font-medium text-stone-800">${item.price}</span>
                       </div>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-stone-600 line-clamp-2">{item.description}</p>
+                  <p className="mt-2 text-xs sm:text-sm text-stone-600 line-clamp-2">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -400,50 +400,50 @@ function App() {
       {isCartOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsCartOpen(false)}></div>
-          <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl">
+          <div className="absolute right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl">
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-6 border-b border-stone-200">
-                <h2 className="text-xl font-semibold text-stone-800">Your Order</h2>
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-stone-200">
+                <h2 className="text-lg sm:text-xl font-semibold text-stone-800">Your Order</h2>
                 <button 
                   onClick={() => setIsCartOpen(false)}
-                  className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+                  className="p-3 sm:p-2 hover:bg-stone-100 rounded-full transition-colors"
                 >
-                  <Plus className="h-5 w-5 rotate-45 text-stone-600" />
+                  <Plus className="h-6 w-6 sm:h-5 sm:w-5 rotate-45 text-stone-600" />
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                 {cartItems.length === 0 ? (
                   <div className="text-center text-stone-500 mt-12">
                     <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-stone-300" />
                     <p>Your cart is empty</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {cartItems.map(item => (
-                      <div key={item.id} className="flex items-center space-x-4 bg-stone-50 p-4 rounded-lg">
+                      <div key={item.id} className="flex items-center space-x-3 sm:space-x-4 bg-stone-50 p-3 sm:p-4 rounded-lg">
                         <img 
                           src={item.image} 
                           alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg"
+                          className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-stone-800">{item.name}</h4>
-                          <p className="text-stone-600">${item.price}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-stone-800 text-sm sm:text-base truncate">{item.name}</h4>
+                          <p className="text-stone-600 text-sm sm:text-base">${item.price}</p>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="p-1 hover:bg-stone-200 rounded transition-colors"
+                            className="p-2 sm:p-1 hover:bg-stone-200 rounded transition-colors"
                           >
-                            <Minus className="h-4 w-4 text-stone-600" />
+                            <Minus className="h-5 w-5 sm:h-4 sm:w-4 text-stone-600" />
                           </button>
-                          <span className="w-8 text-center text-stone-800">{item.quantity}</span>
+                          <span className="w-8 text-center text-stone-800 text-sm sm:text-base">{item.quantity}</span>
                           <button
                             onClick={() => addToCart(item)}
-                            className="p-1 hover:bg-stone-200 rounded transition-colors"
+                            className="p-2 sm:p-1 hover:bg-stone-200 rounded transition-colors"
                           >
-                            <Plus className="h-4 w-4 text-stone-600" />
+                            <Plus className="h-5 w-5 sm:h-4 sm:w-4 text-stone-600" />
                           </button>
                         </div>
                       </div>
@@ -453,12 +453,12 @@ function App() {
               </div>
 
               {cartItems.length > 0 && (
-                <div className="border-t border-stone-200 p-6">
+                <div className="border-t border-stone-200 p-4 sm:p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-lg font-semibold text-stone-800">Total</span>
-                    <span className="text-xl font-bold text-stone-800">${getTotalPrice().toFixed(2)}</span>
+                    <span className="text-base sm:text-lg font-semibold text-stone-800">Total</span>
+                    <span className="text-lg sm:text-xl font-bold text-stone-800">${getTotalPrice().toFixed(2)}</span>
                   </div>
-                  <button className="w-full bg-stone-800 hover:bg-stone-900 text-white py-4 rounded-lg font-medium transition-colors">
+                  <button className="w-full bg-stone-800 hover:bg-stone-900 text-white py-3 sm:py-4 rounded-lg font-medium transition-colors text-sm sm:text-base">
                     Proceed to Checkout
                   </button>
                 </div>
@@ -470,11 +470,11 @@ function App() {
       {/* Fixed Cart Icon - Bottom Right */}
       <button
         onClick={() => setIsCartOpen(!isCartOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-stone-900 hover:bg-stone-800 text-white rounded-full p-4 shadow-xl transition-colors"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-stone-900 hover:bg-stone-800 text-white rounded-full p-3 sm:p-4 shadow-xl transition-colors"
       >
-        <ShoppingCart className="h-6 w-6" />
+        <ShoppingCart className="h-6 w-6 sm:h-6 sm:w-6" />
         {getTotalItems() > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-medium">
+          <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center font-medium">
             {getTotalItems()}
           </span>
         )}
