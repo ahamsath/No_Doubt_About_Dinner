@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { ShoppingCart, Plus, Minus, Star, Clock, ChefHat, Drumstick, IceCream, Beef, Pizza, Leaf, Fish, Coffee, X } from 'lucide-react'
 
 interface MenuItem {
@@ -21,6 +22,11 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("All")
   const [serviceType, setServiceType] = useState<'Individual' | 'Catering'>('Individual')
+  
+  // Reset category when service type changes
+  useEffect(() => {
+    setActiveCategory('All')
+  }, [serviceType])
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
@@ -70,13 +76,15 @@ function App() {
       lastTimeRef.current = now
 
       if (!isPausedRef.current) {
-        const deltaPx = (pixelsPerSecond * deltaMs) / 1000
-        let next = container.scrollLeft + deltaPx
-        const halfWidth = container.scrollWidth / 2
-        if (next >= halfWidth) {
-          next -= halfWidth
+        const scrollableWidth = container.scrollWidth - container.clientWidth
+        if (scrollableWidth > 0) {
+          const deltaPx = (pixelsPerSecond * deltaMs) / 1000
+          let next = container.scrollLeft + deltaPx
+          if (next >= scrollableWidth) {
+            next = next % scrollableWidth
+          }
+          container.scrollLeft = next
         }
-        container.scrollLeft = next
       }
 
       animationFrameRef.current = requestAnimationFrame(step)
@@ -137,14 +145,14 @@ function App() {
     }
   }, [])
 
-  const menuItems: MenuItem[] = [
+  const individualMenuItems: MenuItem[] = [
     {
       id: 1,
       name: "Truffle Risotto",
       description: "Creamy arborio rice with black truffle, parmesan, and fresh herbs",
       price: 28,
       image: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&h=300&fit=crop",
-      category: "Main Course",
+      category: "Vegetarian",
       rating: 4.8,
       prepTime: "35 min"
     },
@@ -154,7 +162,7 @@ function App() {
       description: "Pan-seared duck with cherry gastrique and roasted vegetables",
       price: 35,
       image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
-      category: "Main Course",
+      category: "Poultry",
       rating: 4.9,
       prepTime: "40 min"
     },
@@ -164,7 +172,7 @@ function App() {
       description: "Rich and creamy lobster soup with cognac and fresh cream",
       price: 18,
       image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop",
-      category: "Appetizer",
+      category: "Seafood",
       rating: 4.7,
       prepTime: "20 min"
     },
@@ -184,7 +192,7 @@ function App() {
       description: "Tender beef fillet wrapped in puff pastry with mushroom duxelles",
       price: 45,
       image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
-      category: "Main Course",
+      category: "Beef",
       rating: 4.8,
       prepTime: "50 min"
     },
@@ -194,9 +202,92 @@ function App() {
       description: "Fresh burrata with heirloom tomatoes, basil, and balsamic reduction",
       price: 16,
       image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop",
-      category: "Appetizer",
+      category: "Salads",
       rating: 4.6,
       prepTime: "15 min"
+    }
+  ]
+
+  const cateringMenuItems: MenuItem[] = [
+    {
+      id: 101,
+      name: "Executive Lunch Platter",
+      description: "Assorted gourmet sandwiches, salads, and sides for 10-15 people",
+      price: 180,
+      image: "https://images.unsplash.com/photo-1555939594-58e9c029e0e7?w=400&h=300&fit=crop",
+      category: "Corporate",
+      rating: 4.8,
+      prepTime: "2 hours"
+    },
+    {
+      id: 102,
+      name: "Wedding Reception Package",
+      description: "Three-course plated dinner with appetizer service for up to 100 guests",
+      price: 4500,
+      image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=300&fit=crop",
+      category: "Wedding",
+      rating: 4.9,
+      prepTime: "4-6 hours"
+    },
+    {
+      id: 103,
+      name: "Holiday Party Buffet",
+      description: "Festive buffet spread with carved meats, seasonal sides, and desserts",
+      price: 850,
+      image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=300&fit=crop",
+      category: "Holiday",
+      rating: 4.7,
+      prepTime: "3-4 hours"
+    },
+    {
+      id: 104,
+      name: "Cocktail Reception",
+      description: "Elegant passed hors d'oeuvres and stationed appetizers for 50 guests",
+      price: 1250,
+      image: "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
+      category: "Cocktail",
+      rating: 4.8,
+      prepTime: "2-3 hours"
+    },
+    {
+      id: 105,
+      name: "Birthday Celebration Package",
+      description: "Custom birthday menu with cake, decorations, and full service",
+      price: 650,
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+      category: "Birthday",
+      rating: 4.9,
+      prepTime: "3 hours"
+    },
+    {
+      id: 106,
+      name: "Corporate Breakfast",
+      description: "Continental breakfast spread with pastries, fruits, and coffee service",
+      price: 320,
+      image: "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&h=300&fit=crop",
+      category: "Corporate",
+      rating: 4.6,
+      prepTime: "1-2 hours"
+    },
+    {
+      id: 107,
+      name: "BBQ & Picnic Catering",
+      description: "Outdoor barbecue setup with grilled meats, sides, and picnic favorites",
+      price: 950,
+      image: "https://images.unsplash.com/photo-1555939594-58e9c029e0e7?w=400&h=300&fit=crop",
+      category: "BBQ",
+      rating: 4.7,
+      prepTime: "3-4 hours"
+    },
+    {
+      id: 108,
+      name: "Formal Dinner Service",
+      description: "Multi-course plated dinner with wine pairings and white-glove service",
+      price: 2200,
+      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop",
+      category: "Formal",
+      rating: 4.9,
+      prepTime: "5-6 hours"
     }
   ]
 
@@ -258,7 +349,8 @@ function App() {
   }
 
   const filteredAndSortedItems = useMemo(() => {
-    let items = [...menuItems]
+    const currentMenuItems = serviceType === 'Individual' ? individualMenuItems : cateringMenuItems
+    let items = [...currentMenuItems]
     if (activeCategory !== 'All') {
       items = items.filter(i => i.category === activeCategory)
     }
@@ -269,18 +361,51 @@ function App() {
       return parsePrepMinutes(a.prepTime) - parsePrepMinutes(b.prepTime)
     })
     return items
-  }, [activeCategory])
+  }, [activeCategory, serviceType])
 
-  const iconCategories = useMemo(() => ([
-    { label: 'All', value: 'All', Icon: ChefHat },
-    { label: 'Chicken', value: 'Chicken', Icon: Drumstick },
-    { label: 'Beef', value: 'Beef', Icon: Beef },
-    { label: 'Italian', value: 'Italian', Icon: Pizza },
-    { label: 'Vegetarian', value: 'Vegetarian', Icon: Leaf },
-    { label: 'Seafood', value: 'Seafood', Icon: Fish },
-    { label: 'Desserts', value: 'Dessert', Icon: IceCream },
-    { label: 'Coffee', value: 'Coffee', Icon: Coffee },
-  ]), [])
+  const iconCategories = useMemo(() => {
+    if (serviceType === 'Individual') {
+      return [
+        { label: 'All', value: 'All', Icon: ChefHat },
+        { label: 'Poultry', value: 'Poultry', Icon: Drumstick },
+        { label: 'Beef', value: 'Beef', Icon: Beef },
+        { label: 'Seafood', value: 'Seafood', Icon: Fish },
+        { label: 'Salads', value: 'Salads', Icon: Leaf },
+        { label: 'Dessert', value: 'Dessert', Icon: IceCream },
+        { label: 'Vegetarian', value: 'Vegetarian', Icon: Pizza },
+      ]
+    } else {
+      return [
+        { label: 'All', value: 'All', Icon: ChefHat },
+        { label: 'Corporate', value: 'Corporate', Icon: Coffee },
+        { label: 'Wedding', value: 'Wedding', Icon: Leaf },
+        { label: 'Holiday', value: 'Holiday', Icon: IceCream },
+        { label: 'Cocktail', value: 'Cocktail', Icon: Fish },
+        { label: 'Birthday', value: 'Birthday', Icon: Pizza },
+        { label: 'BBQ', value: 'BBQ', Icon: Drumstick },
+        { label: 'Formal', value: 'Formal', Icon: Beef },
+      ]
+    }
+  }, [serviceType])
+
+  // Ensure enough width for seamless scrolling by repeating categories
+  const loopCopies = 6
+  const loopedIconCategories = useMemo(() => {
+    return Array.from({ length: loopCopies }).flatMap(() => iconCategories)
+  }, [iconCategories])
+
+  // Restart mobile marquee when category set changes (e.g., switching menus)
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current)
+      resumeTimeoutRef.current = null
+    }
+    isPausedRef.current = false
+    lastTimeRef.current = null
+    container.scrollLeft = 0
+  }, [iconCategories])
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -304,12 +429,24 @@ function App() {
             </div>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-stone-800 mb-2 leading-tight">
-          Deliciously Personal. Expertly Catered.
+          Personal Chef and Catering Servicing Milton/Quincy MA
           </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-stone-600 mb-3 sm:mb-4 max-w-2xl mx-auto px-4">
-          Home-cooked meals or full event catering—crafted with care by your local chef in Boston & Quincy.
+          <p className="text-base sm:text-lg lg:text-xl text-stone-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
+          Home-cooked meals or full event catering—crafted with care by your local chef, Dina.
           Choose your meals or plan your event menu now.
           </p>
+          {/* About button placed between description and Select Menu */}
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <Link
+              to="/about"
+              className="inline-flex items-center rounded-full bg-white text-stone-900 px-5 py-3 font-semibold border border-stone-300 shadow-sm hover:bg-stone-100 active:bg-stone-200 transition-colors"
+            >
+              About Chef Dina
+            </Link>
+          </div>
+          
+          {/* Select Menu Text */}
+          <h2 className="text-xl sm:text-2xl font-bold text-stone-900 text-center mb-4">Select Menu</h2>
           
           {/* Individual/Catering Toggle - Main Page */}
           <div className="flex justify-center mb-3 sm:mb-4 px-4">
@@ -354,7 +491,7 @@ function App() {
               className="marquee-outer scrollable-x"
             >
               <div className="marquee-content">
-                {[...iconCategories, ...iconCategories].map(({ label, value, Icon }, index) => (
+                {loopedIconCategories.map(({ label, value, Icon }, index) => (
                   <button
                     key={`${value}-${index}`}
                     onClick={() => setActiveCategory(value)}
@@ -375,11 +512,6 @@ function App() {
         <div className="max-w-7xl mx-auto">
           
 
-          {/* Section Header */}
-          <div className="mt-4 sm:mt-6 mb-3 sm:mb-4 px-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Featured Dishes</h2>
-            <p className="text-sm sm:text-base text-stone-600">Inspired by your preferences</p>
-          </div>
 
           {/* Menu Grid - Circular cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
@@ -457,25 +589,42 @@ function App() {
                 
                 <p className="text-stone-600 mb-6 text-sm sm:text-base leading-relaxed">{selectedItem.description}</p>
                 
-                {/* Quantity Selector */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-stone-700 mb-3">Quantity</label>
-                  <div className="flex items-center justify-center space-x-6 bg-stone-50 rounded-xl p-4">
+                {/* Catering actions or quantity based on service type */}
+                {serviceType === 'Catering' ? (
+                  <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-3 sm:p-2 hover:bg-stone-200 active:bg-stone-300 rounded-full transition-colors touch-manipulation"
+                      onClick={() => {/* TODO: wire up offered menu action */}}
+                      className="w-full bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white py-4 sm:py-3 rounded-xl font-medium transition-colors"
                     >
-                      <Minus className="h-6 w-6 sm:h-5 sm:w-5 text-stone-600" />
+                      Currently offered Menu
                     </button>
-                    <span className="text-2xl sm:text-xl font-bold w-12 text-center text-stone-900">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="p-3 sm:p-2 hover:bg-stone-200 active:bg-stone-300 rounded-full transition-colors touch-manipulation"
+                      onClick={() => {/* TODO: wire up customize action */}}
+                      className="w-full bg-white border border-stone-300 hover:bg-stone-50 active:bg-stone-100 text-stone-900 py-4 sm:py-3 rounded-xl font-medium transition-colors"
                     >
-                      <Plus className="h-6 w-6 sm:h-5 sm:w-5 text-stone-600" />
+                      Customize Menu
                     </button>
                   </div>
-                </div>
+                ) : (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-stone-700 mb-3">Quantity</label>
+                    <div className="flex items-center justify-center space-x-6 bg-stone-50 rounded-xl p-4">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="p-3 sm:p-2 hover:bg-stone-200 active:bg-stone-300 rounded-full transition-colors touch-manipulation"
+                      >
+                        <Minus className="h-6 w-6 sm:h-5 sm:w-5 text-stone-600" />
+                      </button>
+                      <span className="text-2xl sm:text-xl font-bold w-12 text-center text-stone-900">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="p-3 sm:p-2 hover:bg-stone-200 active:bg-stone-300 rounded-full transition-colors touch-manipulation"
+                      >
+                        <Plus className="h-6 w-6 sm:h-5 sm:w-5 text-stone-600" />
+                      </button>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Special Instructions */}
                 <div className="mb-6">
@@ -489,14 +638,16 @@ function App() {
                   />
                 </div>
                 
-                {/* Add to Cart Button */}
-                <button
-                  onClick={addToCartFromPopup}
-                  className="w-full bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white py-4 sm:py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-base sm:text-sm touch-manipulation"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Add {quantity} to Cart - ${(selectedItem.price * quantity).toFixed(2)}
-                </button>
+                {/* Add to Cart Button (only for Individual) */}
+                {serviceType === 'Individual' && (
+                  <button
+                    onClick={addToCartFromPopup}
+                    className="w-full bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white py-4 sm:py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-base sm:text-sm touch-manipulation"
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    Add {quantity} to Cart - ${(selectedItem.price * quantity).toFixed(2)}
+                  </button>
+                )}
                 
                 {/* Mobile safe area */}
                 <div className="sm:hidden h-6"></div>
@@ -577,10 +728,10 @@ function App() {
           </div>
         </div>
       )}
-      {/* Fixed Cart Icon - Bottom Right (above bottom bar) */}
+      {/* Fixed Cart Icon - Top Right */}
       <button
         onClick={() => setIsCartOpen(!isCartOpen)}
-        className="fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-50 bg-stone-900 hover:bg-stone-800 text-white rounded-full p-3 sm:p-4 shadow-xl transition-colors"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 bg-stone-900 hover:bg-stone-800 text-white rounded-full p-3 sm:p-4 shadow-xl transition-colors"
       >
         <ShoppingCart className="h-6 w-6 sm:h-6 sm:w-6" />
         {getTotalItems() > 0 && (
