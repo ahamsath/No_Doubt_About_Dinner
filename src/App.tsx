@@ -185,7 +185,8 @@ function App() {
             <div className="py-2">
               {/* Category Icons Row with Toggle */}
               <div className="-mx-2 px-2">
-                <div className="flex items-center justify-between">
+                {/* Desktop Layout: Side by side */}
+                <div className="hidden md:flex items-center justify-between">
                   <div className="flex gap-4 overflow-x-auto no-scrollbar">
                     {iconCategories.map(({ label, value, Icon }) => (
                       <button
@@ -199,7 +200,7 @@ function App() {
                     ))}
                   </div>
                   
-                  {/* Individual/Catering Toggle */}
+                  {/* Desktop Individual/Catering Toggle */}
                   <div className="flex-shrink-0 bg-stone-200 rounded-full p-1">
                     <button
                       onClick={() => setServiceType('Individual')}
@@ -213,6 +214,41 @@ function App() {
                     >
                       Catering
                     </button>
+                  </div>
+                </div>
+
+                {/* Mobile Layout: Stacked */}
+                <div className="md:hidden">
+                  {/* Categories Row */}
+                  <div className="flex gap-4 overflow-x-auto no-scrollbar mb-3">
+                    {iconCategories.map(({ label, value, Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => setActiveCategory(value)}
+                        className={`flex-shrink-0 w-20 h-20 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
+                      >
+                        <Icon className="h-8 w-8" />
+                        <span className="text-xs font-semibold leading-tight">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Mobile Individual/Catering Toggle - 50% smaller */}
+                  <div className="flex justify-center">
+                    <div className="bg-stone-200 rounded-full p-0.5 scale-50">
+                      <button
+                        onClick={() => setServiceType('Individual')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+                      >
+                        Individual
+                      </button>
+                      <button
+                        onClick={() => setServiceType('Catering')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+                      >
+                        Catering
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
