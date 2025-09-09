@@ -22,11 +22,11 @@ function App() {
   const [activeCategory, setActiveCategory] = useState<string>("All")
   const [serviceType, setServiceType] = useState<'Individual' | 'Catering'>('Individual')
   const scrollRef = useRef<HTMLDivElement>(null)
-  const autoScrollRef = useRef<number | null>(null)
-  const userScrollTimeoutRef = useRef<number | null>(null)
-  const isUserScrollingRef = useRef(false)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
+  const scrollTimeoutRef = useRef<number | null>(null)
+  const autoScrollIntervalRef = useRef<number | null>(null)
 
-  // Auto-scroll effect for mobile categories with user intervention handling
+  // Auto-scroll effect for mobile categories
   useEffect(() => {
     const scrollContainer = scrollRef.current
     if (!scrollContainer) return
@@ -36,61 +36,87 @@ function App() {
     
     if (scrollWidth <= clientWidth) return // No need to scroll if content fits
 
-    const scrollSpeed = 1.5 // pixels per interval - faster but smooth
-    const interval = 12 // ~83fps for smoother animation
+    const scrollSpeed = 0.5 // pixels per interval
+    const interval = 16 // ~60fps
+    const resumeDelay = 2000 // Resume after 2 seconds of no user interaction
 
-    const startAutoScroll = (fromPosition?: number) => {
-      if (autoScrollRef.current) {
-        clearInterval(autoScrollRef.current)
+    let currentScrollPosition = 0
+
+    const startAutoScroll = () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current)
       }
 
-      let scrollPosition = fromPosition ?? scrollContainer.scrollLeft
-      
-      autoScrollRef.current = setInterval(() => {
-        if (isUserScrollingRef.current) return // Pause if user is scrolling
-        
-        scrollPosition += scrollSpeed
-        
-        // Reset to beginning when we reach the end
-        if (scrollPosition >= scrollWidth - clientWidth) {
-          scrollPosition = 0
+      autoScrollIntervalRef.current = setInterval(() => {
+        if (!isUserScrolling && scrollContainer) {
+          currentScrollPosition += scrollSpeed
+          
+          // Reset to beginning when we reach the end
+          if (currentScrollPosition >= scrollWidth - clientWidth) {
+            currentScrollPosition = 0
+          }
+          
+          scrollContainer.scrollLeft = currentScrollPosition
         }
-        
-        scrollContainer.scrollLeft = scrollPosition
       }, interval)
     }
 
     const handleUserScroll = () => {
-      isUserScrollingRef.current = true
+      setIsUserScrolling(true)
+      
+      // Update current position to where user scrolled
+      currentScrollPosition = scrollContainer.scrollLeft
       
       // Clear existing timeout
-      if (userScrollTimeoutRef.current) {
-        clearTimeout(userScrollTimeoutRef.current)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
       }
       
-      // Set timeout to resume auto-scroll after 0.5 seconds
-      userScrollTimeoutRef.current = setTimeout(() => {
-        isUserScrollingRef.current = false
-        startAutoScroll(scrollContainer.scrollLeft) // Resume from current position
-      }, 500)
+      // Set timeout to resume auto-scroll
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsUserScrolling(false)
+      }, resumeDelay)
     }
 
-    // Add scroll event listener for user interaction detection
+    const handleTouchStart = () => {
+      setIsUserScrolling(true)
+      
+      // Clear existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+
+    const handleTouchEnd = () => {
+      // Update current position to where user scrolled
+      currentScrollPosition = scrollContainer.scrollLeft
+      
+      // Set timeout to resume auto-scroll
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsUserScrolling(false)
+      }, resumeDelay)
+    }
+
+    // Add event listeners
     scrollContainer.addEventListener('scroll', handleUserScroll, { passive: true })
-    
-    // Start initial auto-scroll
-    startAutoScroll(0)
+    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true })
+    scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    // Start auto-scrolling
+    startAutoScroll()
 
     return () => {
-      if (autoScrollRef.current) {
-        clearInterval(autoScrollRef.current)
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current)
       }
-      if (userScrollTimeoutRef.current) {
-        clearTimeout(userScrollTimeoutRef.current)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
       }
       scrollContainer.removeEventListener('scroll', handleUserScroll)
+      scrollContainer.removeEventListener('touchstart', handleTouchStart)
+      scrollContainer.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [])
+  }, [isUserScrolling])
 
   const menuItems: MenuItem[] = [
     {
