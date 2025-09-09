@@ -24,9 +24,10 @@ function App() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const scrollTimeoutRef = useRef<number | null>(null)
-  const autoScrollIntervalRef = useRef<number | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
+  const lastTimestampRef = useRef<number | null>(null)
 
-  // Auto-scroll effect for mobile categories
+  // Auto-scroll effect for mobile categories (smooth with rAF)
   useEffect(() => {
     const scrollContainer = scrollRef.current
     if (!scrollContainer) return
@@ -36,42 +37,39 @@ function App() {
     
     if (scrollWidth <= clientWidth) return // No need to scroll if content fits
 
-    const scrollSpeed = 0.5 // pixels per interval
-    const interval = 16 // ~60fps
+    const scrollSpeedPerSecond = 30 // pixels per second
     const resumeDelay = 2000 // Resume after 2 seconds of no user interaction
 
-    let currentScrollPosition = 0
+    // Start from current position (respects any manual scroll)
+    let currentScrollPosition = scrollContainer.scrollLeft
+    // With duplicated categories, loop halfway for seamless wrap
+    const loopWidth = Math.max(1, Math.floor(scrollWidth / 2))
 
-    const startAutoScroll = () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current)
+    const step = (timestamp: number) => {
+      if (lastTimestampRef.current === null) {
+        lastTimestampRef.current = timestamp
       }
+      const deltaSeconds = (timestamp - lastTimestampRef.current) / 1000
+      lastTimestampRef.current = timestamp
 
-      autoScrollIntervalRef.current = setInterval(() => {
-        if (!isUserScrolling && scrollContainer) {
-          currentScrollPosition += scrollSpeed
-          
-          // Reset to beginning when we reach the end
-          if (currentScrollPosition >= scrollWidth - clientWidth) {
-            currentScrollPosition = 0
-          }
-          
-          scrollContainer.scrollLeft = currentScrollPosition
+      if (!isUserScrolling && scrollContainer) {
+        currentScrollPosition += scrollSpeedPerSecond * deltaSeconds
+        if (currentScrollPosition >= loopWidth) {
+          currentScrollPosition -= loopWidth
         }
-      }, interval)
+        scrollContainer.scrollLeft = currentScrollPosition
+      }
+      animationFrameRef.current = requestAnimationFrame(step)
     }
 
     const handleUserScroll = () => {
       setIsUserScrolling(true)
-      
-      // Update current position to where user scrolled
+      // Sync position to where user scrolled
       currentScrollPosition = scrollContainer.scrollLeft
-      
       // Clear existing timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current)
       }
-      
       // Set timeout to resume auto-scroll
       scrollTimeoutRef.current = setTimeout(() => {
         setIsUserScrolling(false)
@@ -80,18 +78,13 @@ function App() {
 
     const handleTouchStart = () => {
       setIsUserScrolling(true)
-      
-      // Clear existing timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current)
       }
     }
 
     const handleTouchEnd = () => {
-      // Update current position to where user scrolled
       currentScrollPosition = scrollContainer.scrollLeft
-      
-      // Set timeout to resume auto-scroll
       scrollTimeoutRef.current = setTimeout(() => {
         setIsUserScrolling(false)
       }, resumeDelay)
@@ -103,12 +96,13 @@ function App() {
     scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     // Start auto-scrolling
-    startAutoScroll()
+    animationFrameRef.current = requestAnimationFrame(step)
 
     return () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current)
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current)
       }
+      lastTimestampRef.current = null
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current)
       }
