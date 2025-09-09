@@ -37,13 +37,16 @@ function App() {
     
     if (scrollWidth <= clientWidth) return // No need to scroll if content fits
 
-    const scrollSpeedPerSecond = 30 // pixels per second
+    const scrollSpeedPerSecond = 50 // pixels per second - increased for better visibility
     const resumeDelay = 2000 // Resume after 2 seconds of no user interaction
 
     // Start from current position (respects any manual scroll)
     let currentScrollPosition = scrollContainer.scrollLeft
     // With duplicated categories, loop halfway for seamless wrap
     const loopWidth = Math.max(1, Math.floor(scrollWidth / 2))
+    
+    // Reset timestamp on each effect run to ensure smooth animation
+    lastTimestampRef.current = null
 
     const step = (timestamp: number) => {
       if (lastTimestampRef.current === null) {
@@ -63,7 +66,9 @@ function App() {
     }
 
     const handleUserScroll = () => {
-      setIsUserScrolling(true)
+      if (!isUserScrolling) {
+        setIsUserScrolling(true)
+      }
       // Sync position to where user scrolled
       currentScrollPosition = scrollContainer.scrollLeft
       // Clear existing timeout
@@ -73,6 +78,8 @@ function App() {
       // Set timeout to resume auto-scroll
       scrollTimeoutRef.current = setTimeout(() => {
         setIsUserScrolling(false)
+        // Reset timestamp for smooth resumption
+        lastTimestampRef.current = null
       }, resumeDelay)
     }
 
@@ -84,16 +91,21 @@ function App() {
     }
 
     const handleTouchEnd = () => {
+      // Sync position to where user scrolled
       currentScrollPosition = scrollContainer.scrollLeft
       scrollTimeoutRef.current = setTimeout(() => {
         setIsUserScrolling(false)
+        // Reset timestamp for smooth resumption
+        lastTimestampRef.current = null
       }, resumeDelay)
     }
 
-    // Add event listeners
+    // Add event listeners for touch and mouse interactions
     scrollContainer.addEventListener('scroll', handleUserScroll, { passive: true })
     scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true })
     scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true })
+    scrollContainer.addEventListener('mousedown', handleTouchStart, { passive: true })
+    scrollContainer.addEventListener('mouseup', handleTouchEnd, { passive: true })
 
     // Start auto-scrolling
     animationFrameRef.current = requestAnimationFrame(step)
@@ -109,6 +121,8 @@ function App() {
       scrollContainer.removeEventListener('scroll', handleUserScroll)
       scrollContainer.removeEventListener('touchstart', handleTouchStart)
       scrollContainer.removeEventListener('touchend', handleTouchEnd)
+      scrollContainer.removeEventListener('mousedown', handleTouchStart)
+      scrollContainer.removeEventListener('mouseup', handleTouchEnd)
     }
   }, [isUserScrolling])
 
