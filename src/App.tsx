@@ -20,9 +20,6 @@ function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("All")
-  const [minRating, setMinRating] = useState<number | null>(null)
-  const [maxPrepMinutes, setMaxPrepMinutes] = useState<number | null>(null)
-  const [sortKey, setSortKey] = useState<'recommended' | 'rating' | 'price' | 'time'>('recommended')
   const [serviceType, setServiceType] = useState<'Individual' | 'Catering'>('Individual')
 
   const menuItems: MenuItem[] = [
@@ -124,29 +121,19 @@ function App() {
     return match ? parseInt(match[1], 10) : 0
   }
 
-  const categories = useMemo(() => ['All', ...new Set(menuItems.map(item => item.category))], [])
-
   const filteredAndSortedItems = useMemo(() => {
     let items = [...menuItems]
     if (activeCategory !== 'All') {
       items = items.filter(i => i.category === activeCategory)
     }
-    if (minRating !== null) {
-      items = items.filter(i => i.rating >= minRating)
-    }
-    if (maxPrepMinutes !== null) {
-      items = items.filter(i => parsePrepMinutes(i.prepTime) <= maxPrepMinutes)
-    }
+    // Sort by rating first, then by prep time for recommended order
     items.sort((a, b) => {
-      if (sortKey === 'rating') return b.rating - a.rating
-      if (sortKey === 'price') return a.price - b.price
-      if (sortKey === 'time') return parsePrepMinutes(a.prepTime) - parsePrepMinutes(b.prepTime)
       const r = b.rating - a.rating
       if (r !== 0) return r
       return parsePrepMinutes(a.prepTime) - parsePrepMinutes(b.prepTime)
     })
     return items
-  }, [activeCategory, minRating, maxPrepMinutes, sortKey])
+  }, [activeCategory])
 
   const iconCategories = useMemo(() => ([
     { label: 'All', value: 'All', Icon: ChefHat },
