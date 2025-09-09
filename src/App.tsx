@@ -25,104 +25,108 @@ function App() {
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const scrollTimeoutRef = useRef<number | null>(null)
   const animationFrameRef = useRef<number | null>(null)
-  const lastTimestampRef = useRef<number | null>(null)
 
-  // Auto-scroll effect for mobile categories (smooth with rAF)
+  // Auto-scroll effect for mobile categories
   useEffect(() => {
     const scrollContainer = scrollRef.current
-    if (!scrollContainer) return
+    if (!scrollContainer) {
+      console.log('No scroll container found')
+      return
+    }
 
-    const scrollWidth = scrollContainer.scrollWidth
-    const clientWidth = scrollContainer.clientWidth
-    
-    if (scrollWidth <= clientWidth) return // No need to scroll if content fits
-
-    const scrollSpeedPerSecond = 50 // pixels per second - increased for better visibility
-    const resumeDelay = 2000 // Resume after 2 seconds of no user interaction
-
-    // Start from current position (respects any manual scroll)
-    let currentScrollPosition = scrollContainer.scrollLeft
-    // With duplicated categories, loop halfway for seamless wrap
-    const loopWidth = Math.max(1, Math.floor(scrollWidth / 2))
-    
-    // Reset timestamp on each effect run to ensure smooth animation
-    lastTimestampRef.current = null
-
-    const step = (timestamp: number) => {
-      if (lastTimestampRef.current === null) {
-        lastTimestampRef.current = timestamp
+    // Small delay to ensure DOM layout is complete
+    const timeoutId = setTimeout(() => {
+      const scrollWidth = scrollContainer.scrollWidth
+      const clientWidth = scrollContainer.clientWidth
+      
+      console.log('Scroll dimensions:', { scrollWidth, clientWidth })
+      
+      if (scrollWidth <= clientWidth) {
+        console.log('No scrolling needed - content fits')
+        return
       }
-      const deltaSeconds = (timestamp - lastTimestampRef.current) / 1000
-      lastTimestampRef.current = timestamp
 
-      if (!isUserScrolling && scrollContainer) {
-        currentScrollPosition += scrollSpeedPerSecond * deltaSeconds
-        if (currentScrollPosition >= loopWidth) {
-          currentScrollPosition -= loopWidth
+      const scrollSpeed = 1 // pixels per frame = ~60px/second at 60fps
+      const resumeDelay = 2000 // Resume after 2 seconds of no user interaction
+      let currentScrollPosition = 0 // Start from beginning
+      const maxScroll = scrollWidth - clientWidth
+
+      console.log('Starting auto-scroll with maxScroll:', maxScroll)
+
+      const animate = () => {
+        if (!isUserScrolling && scrollContainer) {
+          currentScrollPosition += scrollSpeed
+          
+          // Loop back to start when we reach the end
+          if (currentScrollPosition >= maxScroll) {
+            currentScrollPosition = 0
+          }
+          
+          scrollContainer.scrollLeft = currentScrollPosition
         }
-        scrollContainer.scrollLeft = currentScrollPosition
+        animationFrameRef.current = requestAnimationFrame(animate)
       }
-      animationFrameRef.current = requestAnimationFrame(step)
-    }
 
-    const handleUserScroll = () => {
-      if (!isUserScrolling) {
+      const handleUserScroll = () => {
+        console.log('User scroll detected')
         setIsUserScrolling(true)
+        currentScrollPosition = scrollContainer.scrollLeft
+        
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current)
+        }
+        
+        scrollTimeoutRef.current = setTimeout(() => {
+          console.log('Resuming auto-scroll')
+          setIsUserScrolling(false)
+        }, resumeDelay)
       }
-      // Sync position to where user scrolled
-      currentScrollPosition = scrollContainer.scrollLeft
-      // Clear existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
+
+      const handleTouchStart = () => {
+        console.log('Touch start detected')
+        setIsUserScrolling(true)
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current)
+        }
       }
-      // Set timeout to resume auto-scroll
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsUserScrolling(false)
-        // Reset timestamp for smooth resumption
-        lastTimestampRef.current = null
-      }, resumeDelay)
-    }
 
-    const handleTouchStart = () => {
-      setIsUserScrolling(true)
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
+      const handleTouchEnd = () => {
+        console.log('Touch end detected')
+        currentScrollPosition = scrollContainer.scrollLeft
+        scrollTimeoutRef.current = setTimeout(() => {
+          console.log('Resuming auto-scroll after touch')
+          setIsUserScrolling(false)
+        }, resumeDelay)
       }
-    }
 
-    const handleTouchEnd = () => {
-      // Sync position to where user scrolled
-      currentScrollPosition = scrollContainer.scrollLeft
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsUserScrolling(false)
-        // Reset timestamp for smooth resumption
-        lastTimestampRef.current = null
-      }, resumeDelay)
-    }
+      // Add event listeners
+      scrollContainer.addEventListener('scroll', handleUserScroll, { passive: true })
+      scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true })
+      scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true })
+      scrollContainer.addEventListener('mousedown', handleTouchStart, { passive: true })
+      scrollContainer.addEventListener('mouseup', handleTouchEnd, { passive: true })
 
-    // Add event listeners for touch and mouse interactions
-    scrollContainer.addEventListener('scroll', handleUserScroll, { passive: true })
-    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true })
-    scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true })
-    scrollContainer.addEventListener('mousedown', handleTouchStart, { passive: true })
-    scrollContainer.addEventListener('mouseup', handleTouchEnd, { passive: true })
-
-    // Start auto-scrolling
-    animationFrameRef.current = requestAnimationFrame(step)
+      // Start animation
+      console.log('Starting animation')
+      animationFrameRef.current = requestAnimationFrame(animate)
+    }, 100)
 
     return () => {
+      clearTimeout(timeoutId)
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current)
       }
-      lastTimestampRef.current = null
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current)
       }
-      scrollContainer.removeEventListener('scroll', handleUserScroll)
-      scrollContainer.removeEventListener('touchstart', handleTouchStart)
-      scrollContainer.removeEventListener('touchend', handleTouchEnd)
-      scrollContainer.removeEventListener('mousedown', handleTouchStart)
-      scrollContainer.removeEventListener('mouseup', handleTouchEnd)
+      const scrollContainer = scrollRef.current
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', () => {})
+        scrollContainer.removeEventListener('touchstart', () => {})
+        scrollContainer.removeEventListener('touchend', () => {})
+        scrollContainer.removeEventListener('mousedown', () => {})
+        scrollContainer.removeEventListener('mouseup', () => {})
+      }
     }
   }, [isUserScrolling])
 
