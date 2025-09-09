@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { ShoppingCart, Plus, Minus, Star, Clock, ChefHat, Drumstick, IceCream, Beef, Pizza, Leaf, Fish, Coffee } from 'lucide-react'
 
 interface MenuItem {
@@ -21,6 +21,35 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("All")
   const [serviceType, setServiceType] = useState<'Individual' | 'Catering'>('Individual')
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll effect for mobile categories
+  useEffect(() => {
+    const scrollContainer = scrollRef.current
+    if (!scrollContainer) return
+
+    const scrollWidth = scrollContainer.scrollWidth
+    const clientWidth = scrollContainer.clientWidth
+    
+    if (scrollWidth <= clientWidth) return // No need to scroll if content fits
+
+    let scrollPosition = 0
+    const scrollSpeed = 0.5 // pixels per interval
+    const interval = 16 // ~60fps
+
+    const autoScroll = setInterval(() => {
+      scrollPosition += scrollSpeed
+      
+      // Reset to beginning when we reach the end
+      if (scrollPosition >= scrollWidth - clientWidth) {
+        scrollPosition = 0
+      }
+      
+      scrollContainer.scrollLeft = scrollPosition
+    }, interval)
+
+    return () => clearInterval(autoScroll)
+  }, [])
 
   const menuItems: MenuItem[] = [
     {
@@ -174,56 +203,60 @@ function App() {
             Exquisite personal chef experiences delivered to your door. 
             Crafted with passion, served with excellence.
           </p>
+          
+          {/* Individual/Catering Toggle - Main Page */}
+          <div className="flex justify-center mb-8">
+            <div className="bg-stone-200 rounded-full p-1">
+              <button
+                onClick={() => setServiceType('Individual')}
+                className={`px-6 py-3 rounded-full text-base font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+              >
+                Individual
+              </button>
+              <button
+                onClick={() => setServiceType('Catering')}
+                className={`px-6 py-3 rounded-full text-base font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+              >
+                Catering
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Menu Section */}
       <section id="menu" className="pb-20 pt-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Sticky Category Row (DoorDash-style) */}
+          {/* Sticky Category Row */}
           <div className="sticky top-0 z-40 bg-stone-50">
             <div className="py-2">
-              {/* Category Icons Row with Toggle */}
+              {/* Category Icons Row */}
               <div className="-mx-2 px-2">
-                {/* Desktop Layout: Side by side */}
-                <div className="hidden md:flex items-center justify-between">
-                  <div className="flex gap-4 overflow-x-auto no-scrollbar">
-                    {iconCategories.map(({ label, value, Icon }) => (
-                      <button
-                        key={value}
-                        onClick={() => setActiveCategory(value)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
-                      >
-                        <Icon className="h-8 w-8" />
-                        <span className="text-xs font-semibold leading-tight">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                  
-                  {/* Desktop Individual/Catering Toggle */}
-                  <div className="flex-shrink-0 bg-stone-200 rounded-full p-1">
+                {/* Desktop Layout */}
+                <div className="hidden md:flex gap-4 overflow-x-auto no-scrollbar">
+                  {iconCategories.map(({ label, value, Icon }) => (
                     <button
-                      onClick={() => setServiceType('Individual')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
+                      key={value}
+                      onClick={() => setActiveCategory(value)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
                     >
-                      Individual
+                      <Icon className="h-8 w-8" />
+                      <span className="text-xs font-semibold leading-tight">{label}</span>
                     </button>
-                    <button
-                      onClick={() => setServiceType('Catering')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
-                    >
-                      Catering
-                    </button>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Mobile Layout: Stacked */}
+                {/* Mobile Layout: Auto-scrolling */}
                 <div className="md:hidden">
-                  {/* Categories Row */}
-                  <div className="flex gap-4 overflow-x-auto no-scrollbar mb-3">
-                    {iconCategories.map(({ label, value, Icon }) => (
+                  <div 
+                    ref={scrollRef}
+                    className="flex gap-4 overflow-x-auto no-scrollbar"
+                    style={{ scrollBehavior: 'auto' }}
+                  >
+                    {/* Duplicate categories for seamless loop */}
+                    {[...iconCategories, ...iconCategories].map(({ label, value, Icon }, index) => (
                       <button
-                        key={value}
+                        key={`${value}-${index}`}
                         onClick={() => setActiveCategory(value)}
                         className={`flex-shrink-0 w-20 h-20 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 ${activeCategory === value ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-800 hover:bg-stone-100/50'}`}
                       >
@@ -231,28 +264,9 @@ function App() {
                         <span className="text-xs font-semibold leading-tight">{label}</span>
                       </button>
                     ))}
-                  </div>
-                  
-                  {/* Mobile Individual/Catering Toggle - 50% smaller */}
-                  <div className="flex justify-center">
-                    <div className="bg-stone-200 rounded-full p-0.5 scale-50">
-                      <button
-                        onClick={() => setServiceType('Individual')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Individual' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
-                      >
-                        Individual
-                      </button>
-                      <button
-                        onClick={() => setServiceType('Catering')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${serviceType === 'Catering' ? 'bg-stone-900 text-white' : 'text-stone-700 hover:text-stone-900'}`}
-                      >
-                        Catering
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
