@@ -22,8 +22,11 @@ function App() {
   const [activeCategory, setActiveCategory] = useState<string>("All")
   const [serviceType, setServiceType] = useState<'Individual' | 'Catering'>('Individual')
   const scrollRef = useRef<HTMLDivElement>(null)
+  const autoScrollRef = useRef<number | null>(null)
+  const userScrollTimeoutRef = useRef<number | null>(null)
+  const isUserScrollingRef = useRef(false)
 
-  // Auto-scroll effect for mobile categories
+  // Auto-scroll effect for mobile categories with user intervention handling
   useEffect(() => {
     const scrollContainer = scrollRef.current
     if (!scrollContainer) return
@@ -33,22 +36,60 @@ function App() {
     
     if (scrollWidth <= clientWidth) return // No need to scroll if content fits
 
-    let scrollPosition = 0
     const scrollSpeed = 0.5 // pixels per interval
     const interval = 16 // ~60fps
 
-    const autoScroll = setInterval(() => {
-      scrollPosition += scrollSpeed
+    const startAutoScroll = (fromPosition?: number) => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current)
+      }
+
+      let scrollPosition = fromPosition ?? scrollContainer.scrollLeft
       
-      // Reset to beginning when we reach the end
-      if (scrollPosition >= scrollWidth - clientWidth) {
-        scrollPosition = 0
+      autoScrollRef.current = setInterval(() => {
+        if (isUserScrollingRef.current) return // Pause if user is scrolling
+        
+        scrollPosition += scrollSpeed
+        
+        // Reset to beginning when we reach the end
+        if (scrollPosition >= scrollWidth - clientWidth) {
+          scrollPosition = 0
+        }
+        
+        scrollContainer.scrollLeft = scrollPosition
+      }, interval)
+    }
+
+    const handleUserScroll = () => {
+      isUserScrollingRef.current = true
+      
+      // Clear existing timeout
+      if (userScrollTimeoutRef.current) {
+        clearTimeout(userScrollTimeoutRef.current)
       }
       
-      scrollContainer.scrollLeft = scrollPosition
-    }, interval)
+      // Set timeout to resume auto-scroll after 0.5 seconds
+      userScrollTimeoutRef.current = setTimeout(() => {
+        isUserScrollingRef.current = false
+        startAutoScroll(scrollContainer.scrollLeft) // Resume from current position
+      }, 500)
+    }
 
-    return () => clearInterval(autoScroll)
+    // Add scroll event listener for user interaction detection
+    scrollContainer.addEventListener('scroll', handleUserScroll, { passive: true })
+    
+    // Start initial auto-scroll
+    startAutoScroll(0)
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current)
+      }
+      if (userScrollTimeoutRef.current) {
+        clearTimeout(userScrollTimeoutRef.current)
+      }
+      scrollContainer.removeEventListener('scroll', handleUserScroll)
+    }
   }, [])
 
   const menuItems: MenuItem[] = [
