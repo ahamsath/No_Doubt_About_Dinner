@@ -36,7 +36,7 @@ function App() {
     
     if (scrollWidth <= clientWidth) return // No need to scroll if content fits
 
-    const scrollSpeed = 0.5 // pixels per interval
+    const scrollSpeed = 2 // pixels per interval
     const interval = 16 // ~60fps
 
     const startAutoScroll = (fromPosition?: number) => {
